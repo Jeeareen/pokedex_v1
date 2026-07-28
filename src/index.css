@@ -1,0 +1,9 @@
+*,
+*::before,
+*::after {
+  font-family: 'Saira Semi Condensed', 'Arial Narrow', sans-serif;
+}
+
+body {
+  margin: 0;
+}
