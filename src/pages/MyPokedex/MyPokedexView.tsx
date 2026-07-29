@@ -1,25 +1,25 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useFavouritesViewModel } from './useFavouritesViewModel'
+import { useMyPokedexViewModel } from './useMyPokedexViewModel'
 import { useAuth } from '../../context/AuthContext'
 import PokemonCard from '../../components/PokemonCard/PokemonCard'
 import type { PokemonListItem } from '../../services/PokeAPIService'
 
-interface FavouritesViewProps {
-  viewModel?: ReturnType<typeof useFavouritesViewModel>
+interface MyPokedexViewProps {
+  viewModel?: ReturnType<typeof useMyPokedexViewModel>
 }
 
-function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
+function MyPokedexView({ viewModel: propViewModel }: MyPokedexViewProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const defaultViewModel = useFavouritesViewModel()
+  const defaultViewModel = useMyPokedexViewModel()
   const {
+    pokedex,
     favourites,
-    myPokedex,
     loading,
     error,
-    removeFavourite,
-    togglePokedex,
+    removeFromPokedex,
+    toggleFavourite,
   } = propViewModel || defaultViewModel
 
   const [authModalMessage, setAuthModalMessage] = useState<string | null>(null)
@@ -27,7 +27,7 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
   if (!user) {
     return (
       <div
-        className="favourites-view"
+        className="my-pokedex-view"
         style={{
           padding: '40px 20px',
           maxWidth: '600px',
@@ -35,9 +35,9 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
           textAlign: 'center',
         }}
       >
-        <h1>Favourites</h1>
+        <h1>My Pokédex</h1>
         <p style={{ fontSize: '16px', color: '#555', margin: '24px 0' }}>
-          To add favourite Pokémon, you need to login.
+          To add Pokémon to your Pokédex, you need to login.
         </p>
         <button
           type="button"
@@ -59,25 +59,25 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
     )
   }
 
-  const handleFavouriteClick = (pokemon: PokemonListItem) => {
-    if (!user) {
-      setAuthModalMessage('Log in to add this pokemon to your favourites / pokedex.')
-      return
-    }
-    removeFavourite(pokemon)
-  }
-
   const handlePokedexClick = (pokemon: PokemonListItem) => {
     if (!user) {
       setAuthModalMessage('Log in to add this pokemon to your favourites / pokedex.')
       return
     }
-    togglePokedex(pokemon)
+    removeFromPokedex(pokemon)
+  }
+
+  const handleFavouriteClick = (pokemon: PokemonListItem) => {
+    if (!user) {
+      setAuthModalMessage('Log in to add this pokemon to your favourites / pokedex.')
+      return
+    }
+    toggleFavourite(pokemon)
   }
 
   return (
-    <div className="favourites-view" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>Favourites</h1>
+    <div className="my-pokedex-view" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <h1>My Pokédex</h1>
 
       {authModalMessage && (
         <div
@@ -148,13 +148,13 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
         </div>
       )}
 
-      {loading && <p className="loading-message">Loading favourite Pokémon...</p>}
+      {loading && <p className="loading-message">Loading My Pokédex...</p>}
 
       {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
 
-      {!loading && !error && favourites.length === 0 && (
+      {!loading && !error && pokedex.length === 0 && (
         <p className="empty-message" style={{ textAlign: 'center', margin: '32px 0', color: '#666' }}>
-          No favourite Pokémon added yet. Search for Pokémon and click the star to add them!
+          Your Pokédex is empty! Explore Pokémon on the home page and click "Add to Pokedex" to add them.
         </p>
       )}
 
@@ -167,16 +167,16 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
         }}
       >
         {!loading &&
-          favourites.map((pokemon) => {
-            const inDex = myPokedex.some((d) => d.url === pokemon.url)
+          pokedex.map((pokemon) => {
+            const isFav = favourites.some((f) => f.url === pokemon.url)
             return (
               <PokemonCard
                 key={pokemon.name}
                 pokemon={pokemon}
-                isFavourite={true}
-                isInPokedex={inDex}
-                onFavouriteClick={handleFavouriteClick}
+                isInPokedex={true}
+                isFavourite={isFav}
                 onPokedexClick={handlePokedexClick}
+                onFavouriteClick={handleFavouriteClick}
               />
             )
           })}
@@ -185,4 +185,4 @@ function FavouritesView({ viewModel: propViewModel }: FavouritesViewProps) {
   )
 }
 
-export default FavouritesView
+export default MyPokedexView

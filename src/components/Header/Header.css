@@ -26,6 +26,9 @@
   background-color: #0066cc;
   color: #fff;
   font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
   text-decoration: none;
   transition: background-color 0.15s ease, transform 0.15s ease;
 }
