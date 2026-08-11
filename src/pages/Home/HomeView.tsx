@@ -148,38 +148,25 @@ function HomeView({ viewModel: propViewModel }: HomeViewProps) {
       </div>
 
       {!loading && pokemons.length > 0 && (
-        <div
-          className="pagination"
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '16px',
-            marginTop: '24px',
-          }}
-        >
+        <div className="flex justify-center items-center gap-4 mt-8">
           <button
+            type="button"
             onClick={prevPage}
             disabled={currentPage === 1}
-            style={{
-              padding: '8px 16px',
-              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            }}
+            className="w-28 py-2 text-sm font-semibold rounded-lg bg-white border border-gray-300 text-black text-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:enabled:bg-gray-50"
           >
             Previous
           </button>
 
-          <span>
+          <span className="text-sm font-medium text-black">
             Page {currentPage} of {totalPages}
           </span>
 
           <button
+            type="button"
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            style={{
-              padding: '8px 16px',
-              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-            }}
+            className="w-28 py-2 text-sm font-semibold rounded-lg bg-white border border-gray-300 text-black text-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:enabled:bg-gray-50"
           >
             Next
           </button>

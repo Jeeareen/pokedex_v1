@@ -67,7 +67,7 @@ function PokemonCard({
       <img
         src={imageUrl}
         alt={pokemon.name}
-        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+        style={{ width: '120px', height: '120px', objectFit: 'contain', margin: '0 auto', display: 'block' }}
       />
       <h3 style={{ textTransform: 'capitalize', margin: '8px 0 4px' }}>
         {pokemon.name}

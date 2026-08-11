@@ -50,10 +50,15 @@ export async function getPokemonList(limit: number = 1025, offset: number = 0): 
 }
 
 export async function getPokemonDetails(pokemon: { name: string; url: string }): Promise<PokemonListItem> {
-  const gen = getPokemonGenFromId(pokemon.url);
   try {
-    const detailRes = await fetch(pokemon.url);
+    // Determine direct endpoint if url is a species url
+    const fetchUrl = pokemon.url.includes('/pokemon-species/')
+      ? pokemon.url.replace('/pokemon-species/', '/pokemon/')
+      : pokemon.url;
+
+    const detailRes = await fetch(fetchUrl);
     if (!detailRes.ok) {
+      const gen = getPokemonGenFromId(pokemon.url);
       return {
         name: pokemon.name,
         url: pokemon.url,
@@ -62,17 +67,23 @@ export async function getPokemonDetails(pokemon: { name: string; url: string }):
       };
     }
     const detailData = await detailRes.json();
+    const numericId = detailData.id;
     const typeString = detailData.types
       ? detailData.types.map((t: any) => t.type.name).join(', ')
       : 'Unknown';
 
+    // Standardized numeric Pokemon URL so PokemonCard getPokedexNumber gets the integer ID
+    const canonicalUrl = `${BASE_URL}/api/v2/pokemon/${numericId}/`;
+    const gen = getPokemonGenFromId(numericId);
+
     return {
       name: pokemon.name,
-      url: pokemon.url,
+      url: canonicalUrl,
       type: typeString,
       gen,
     };
   } catch {
+    const gen = getPokemonGenFromId(pokemon.url);
     return {
       name: pokemon.name,
       url: pokemon.url,
