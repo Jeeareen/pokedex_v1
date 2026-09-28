@@ -6,6 +6,7 @@ import MyPokedexView from './pages/MyPokedex/MyPokedexView'
 import AuthView from './pages/Auth/AuthView'
 import CategoriesPage from './pages/Categories/CategoriesPage'
 import CategoryDetailPage from './pages/Categories/CategoryDetailPage'
+import PokemonDetail from './pages/PokemonDetail'
 import { useHomeViewModel } from './pages/Home/useHomeViewModel'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
       />
       <Routes>
         <Route path="/" element={<HomeView viewModel={homeViewModel} />} />
+        <Route path="/pokemon/:id" element={<PokemonDetail />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:categoryType/:categoryName" element={<CategoryDetailPage />} />
         <Route path="/my-pokedex" element={<MyPokedexView />} />

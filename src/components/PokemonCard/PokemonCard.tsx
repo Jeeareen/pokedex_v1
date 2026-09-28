@@ -1,3 +1,4 @@
+import { Link, useLocation } from 'react-router-dom'
 import type { PokemonListItem } from '../../services/PokeAPIService'
 
 interface PokemonCardProps {
@@ -20,19 +21,20 @@ function PokemonCard({
   onFavouriteClick,
   onPokedexClick,
 }: PokemonCardProps) {
+  const location = useLocation()
   const pokedexNum = getPokedexNumber(pokemon.url)
   const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokedexNum}.png`
 
   return (
     <div
-      className="pokemon-item"
+      className="pokemon-item transition-transform hover:-translate-y-1 hover:shadow-lg"
       style={{
         position: 'relative',
         border: '1px solid #ddd',
-        borderRadius: '8px',
+        borderRadius: '12px',
         padding: '16px',
         textAlign: 'center',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
       }}
     >
       {/* Favourite star button in top-right corner */}
@@ -50,6 +52,7 @@ function PokemonCard({
           cursor: 'pointer',
           padding: 0,
           lineHeight: 1,
+          zIndex: 10,
         }}
       >
         <span
@@ -64,14 +67,22 @@ function PokemonCard({
         </span>
       </button>
 
-      <img
-        src={imageUrl}
-        alt={pokemon.name}
-        style={{ width: '120px', height: '120px', objectFit: 'contain', margin: '0 auto', display: 'block' }}
-      />
-      <h3 style={{ textTransform: 'capitalize', margin: '8px 0 4px' }}>
-        {pokemon.name}
-      </h3>
+      <Link
+        to={`/pokemon/${pokedexNum}`}
+        state={{ from: location.pathname + location.search }}
+        className="block group cursor-pointer"
+        title={`View details for ${pokemon.name}`}
+      >
+        <img
+          src={imageUrl}
+          alt={pokemon.name}
+          className="transition-transform duration-200 group-hover:scale-105"
+          style={{ width: '120px', height: '120px', objectFit: 'contain', margin: '0 auto', display: 'block' }}
+        />
+        <h3 className="group-hover:text-amber-600 transition-colors" style={{ textTransform: 'capitalize', margin: '8px 0 4px', fontWeight: 700 }}>
+          {pokemon.name}
+        </h3>
+      </Link>
       <p style={{ margin: '4px 0', fontSize: '14px', color: '#666' }}>
         <strong>Pokédex #:</strong> {pokedexNum}
       </p>

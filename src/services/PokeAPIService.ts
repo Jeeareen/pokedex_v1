@@ -119,3 +119,86 @@ export async function searchPokemon(name: string): Promise<PokemonListItem[]> {
 
   return detailedResults;
 }
+
+export interface PokemonDetailData {
+  id: number;
+  name: string;
+  types: string[];
+  height: number; // in decimeters
+  weight: number; // in hectograms
+  speciesTitle: string;
+  flavorText: string;
+  cryUrl: string | null;
+  spriteUrl: string;
+  gen: number;
+}
+
+export async function fetchPokemonDetailById(idOrName: string | number): Promise<PokemonDetailData> {
+  const cleanId = String(idOrName).toLowerCase().trim();
+  const pokemonRes = await fetch(`${BASE_URL}/api/v2/pokemon/${cleanId}`);
+  if (!pokemonRes.ok) {
+    throw new Error(`Pokemon not found: ${cleanId}`);
+  }
+  const pokeData = await pokemonRes.json();
+
+  const id = pokeData.id;
+  const name = pokeData.name;
+  const types = pokeData.types ? pokeData.types.map((t: any) => t.type.name) : [];
+  const height = pokeData.height;
+  const weight = pokeData.weight;
+  const cryUrl = pokeData.cries?.latest || pokeData.cries?.legacy || null;
+  const spriteUrl =
+    pokeData.sprites?.other?.['official-artwork']?.front_default ||
+    pokeData.sprites?.front_default ||
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+  const gen = getPokemonGenFromId(id);
+
+  let speciesTitle = 'Pokémon';
+  let flavorText = 'No Pokédex entry available.';
+
+  if (pokeData.species?.url) {
+    try {
+      const speciesRes = await fetch(pokeData.species.url);
+      if (speciesRes.ok) {
+        const speciesData = await speciesRes.json();
+
+        // Find English genus / species title (e.g. "The Mouse Pokémon" or "Mouse Pokémon")
+        const englishGenus = speciesData.genera?.find(
+          (g: any) => g.language.name === 'en'
+        );
+        if (englishGenus?.genus) {
+          speciesTitle = englishGenus.genus.startsWith('The ')
+            ? englishGenus.genus
+            : `The ${englishGenus.genus}`;
+        }
+
+        // Find English flavor text entry (prefer latest game release entries)
+        const englishEntries = speciesData.flavor_text_entries?.filter(
+          (entry: any) => entry.language.name === 'en'
+        );
+        if (englishEntries && englishEntries.length > 0) {
+          const lastEntry = englishEntries[englishEntries.length - 1];
+          flavorText = lastEntry.flavor_text
+            .replace(/[\n\f]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+      }
+    } catch {
+      // Gracefully fall back to defaults
+    }
+  }
+
+  return {
+    id,
+    name,
+    types,
+    height,
+    weight,
+    speciesTitle,
+    flavorText,
+    cryUrl,
+    spriteUrl,
+    gen,
+  };
+}
