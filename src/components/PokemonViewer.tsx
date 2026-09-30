@@ -182,12 +182,12 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
             <button
               type="button"
               onClick={handlePlayCry}
+              onTouchEnd={(e) => { e.preventDefault(); handlePlayCry() }}
               disabled={isPlayingCry}
-              className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-200 border shadow-sm flex-shrink-0 select-none active:scale-95 ${
-                isPlayingCry
+              className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-200 border shadow-sm flex-shrink-0 select-none active:scale-95 ${isPlayingCry
                   ? 'bg-amber-100 text-amber-800 border-amber-400 scale-105'
                   : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
-              }`}
+                }`}
               title="Play Pokemon Cry"
               aria-label="Play Pokemon Cry"
             >
@@ -208,11 +208,11 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
           <button
             type="button"
             onClick={() => { setHasModelError(false); setIsShiny(!isShiny) }}
-            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
-              isShiny
+            onTouchEnd={(e) => { e.preventDefault(); setHasModelError(false); setIsShiny(!isShiny) }}
+            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${isShiny
                 ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-900 font-bold border-yellow-400 ring-2 ring-yellow-400/40 shadow-yellow-500/20'
                 : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
-            }`}
+              }`}
             title="Toggle Standard/Shiny Form"
             aria-label={isShiny ? 'Switch to Standard form' : 'Switch to Shiny form'}
           >
@@ -224,11 +224,11 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
           <button
             type="button"
             onClick={() => setIsAutoRotating(!isAutoRotating)}
-            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
-              isAutoRotating
+            onTouchEnd={(e) => { e.preventDefault(); setIsAutoRotating(!isAutoRotating) }}
+            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${isAutoRotating
                 ? 'bg-blue-50/95 text-blue-700 border-blue-200 ring-1 ring-blue-300/40 hover:bg-blue-100 hover:border-blue-300'
                 : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
-            }`}
+              }`}
             title={isAutoRotating ? 'Pause Auto-Rotate' : 'Enable Auto-Rotate'}
             aria-label={isAutoRotating ? 'Pause Auto-rotating' : 'Enable Auto-rotate'}
           >

@@ -218,6 +218,20 @@ export default function PokemonDetail() {
   const primaryType = pokemon.types[0]?.toLowerCase() || 'normal'
   const primaryColor = POKEMON_TYPE_COLORS[primaryType] || POKEMON_TYPE_COLORS.normal
 
+  const handlePrevPokemon = (e: React.SyntheticEvent) => {
+    e.preventDefault()
+    if (pokemon && pokemon.id > 1) {
+      navigate(`/pokemon/${pokemon.id - 1}`, { state: { from: returnPath } })
+    }
+  }
+
+  const handleNextPokemon = (e: React.SyntheticEvent) => {
+    e.preventDefault()
+    if (pokemon) {
+      navigate(`/pokemon/${pokemon.id + 1}`, { state: { from: returnPath } })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-12 transition-colors">
       <div className="max-w-7xl mx-auto">
@@ -242,10 +256,11 @@ export default function PokemonDetail() {
             <div className="relative flex items-center w-full">
               {/* Previous Pokémon Button (Left) */}
               {pokemon.id > 1 ? (
-                <Link
-                  to={`/pokemon/${pokemon.id - 1}`}
-                  state={{ from: returnPath }}
-                  className="absolute left-2 sm:left-3 z-30 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 group"
+                <button
+                  type="button"
+                  onClick={handlePrevPokemon}
+                  onTouchEnd={handlePrevPokemon}
+                  className="absolute left-2 sm:left-3 z-30 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 group cursor-pointer"
                   title={`Previous Pokémon (#${String(pokemon.id - 1).padStart(3, '0')})`}
                   aria-label="Previous Pokémon"
                 >
@@ -261,7 +276,7 @@ export default function PokemonDetail() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </Link>
+                </button>
               ) : null}
 
               {/* 3D Model Viewer */}
@@ -275,10 +290,11 @@ export default function PokemonDetail() {
               </div>
 
               {/* Next Pokémon Button (Right) */}
-              <Link
-                to={`/pokemon/${pokemon.id + 1}`}
-                state={{ from: returnPath }}
-                className="absolute right-2 sm:right-3 z-30 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 group"
+              <button
+                type="button"
+                onClick={handleNextPokemon}
+                onTouchEnd={handleNextPokemon}
+                className="absolute right-2 sm:right-3 z-30 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 group cursor-pointer"
                 title={`Next Pokémon (#${String(pokemon.id + 1).padStart(3, '0')})`}
                 aria-label="Next Pokémon"
               >
@@ -294,7 +310,7 @@ export default function PokemonDetail() {
                     clipRule="evenodd"
                   />
                 </svg>
-              </Link>
+              </button>
             </div>
           </div>
 

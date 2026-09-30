@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import Header from './components/Header/Header'
 import HomeView from './pages/Home/HomeView'
 import FavouritesView from './pages/Favourites/FavouritesView'
@@ -32,28 +32,42 @@ function ScrollToTop() {
   return null
 }
 
-function App() {
+function MainContent() {
+  const navigate = useNavigate()
   const homeViewModel = useHomeViewModel()
 
+  const handleGlobalSearch = () => {
+    navigate('/')
+    homeViewModel.handleSearch()
+  }
+
+  return (
+    <>
+      <ScrollToTop />
+      <Header
+        query={homeViewModel.query}
+        setQuery={homeViewModel.setQuery}
+        onSearch={handleGlobalSearch}
+        onHomeClick={homeViewModel.resetHome}
+      />
+      <Routes>
+        <Route path="/" element={<HomeView viewModel={homeViewModel} />} />
+        <Route path="/pokemon/:id" element={<PokemonDetail />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/category/:categoryType/:categoryName" element={<CategoryDetailPage />} />
+        <Route path="/my-pokedex" element={<MyPokedexView />} />
+        <Route path="/favourites" element={<FavouritesView />} />
+        <Route path="/auth" element={<AuthView />} />
+      </Routes>
+    </>
+  )
+}
+
+function App() {
   return (
     <MotionProvider>
       <BrowserRouter>
-        <ScrollToTop />
-        <Header
-          query={homeViewModel.query}
-          setQuery={homeViewModel.setQuery}
-          onSearch={homeViewModel.handleSearch}
-          onHomeClick={homeViewModel.resetHome}
-        />
-        <Routes>
-          <Route path="/" element={<HomeView viewModel={homeViewModel} />} />
-          <Route path="/pokemon/:id" element={<PokemonDetail />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/category/:categoryType/:categoryName" element={<CategoryDetailPage />} />
-          <Route path="/my-pokedex" element={<MyPokedexView />} />
-          <Route path="/favourites" element={<FavouritesView />} />
-          <Route path="/auth" element={<AuthView />} />
-        </Routes>
+        <MainContent />
       </BrowserRouter>
     </MotionProvider>
   )
