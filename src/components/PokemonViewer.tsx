@@ -1,7 +1,8 @@
 import React, { Suspense, useRef, useState, useEffect, useMemo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, useGLTF, Html } from '@react-three/drei'
+import { OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { useMotion } from '../context/MotionContext'
 
 // Every Pokemon will be normalized so its largest dimension equals this world-unit size
 const TARGET_SIZE = 3.2
@@ -113,22 +114,32 @@ export interface PokemonViewerProps {
 }
 
 export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: PokemonViewerProps) {
+  const { reducedMotion } = useMotion()
   const [isShiny, setIsShiny] = useState(false)
   const [hasModelError, setHasModelError] = useState(false)
   const [isPlayingCry, setIsPlayingCry] = useState(false)
-  const [isAutoRotating, setIsAutoRotating] = useState(true)
-  const [isInView, setIsInView] = useState(false)
+  const [isAutoRotating, setIsAutoRotating] = useState(() => !reducedMotion)
+  const [isCanvasVisible, setIsCanvasVisible] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/pokemon/${id}.png`
 
   useEffect(() => {
     setIsShiny(false)
     setHasModelError(false)
-  }, [id])
+    if (reducedMotion) {
+      setIsAutoRotating(false)
+    }
+  }, [id, reducedMotion])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setIsInView(true) },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsCanvasVisible(true)
+        }
+      },
       { threshold: 0.1 }
     )
     if (containerRef.current) observer.observe(containerRef.current)
@@ -161,27 +172,35 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
       className="relative w-full h-[380px] sm:h-[460px] md:h-[540px] lg:h-[620px] rounded-3xl overflow-hidden bg-gradient-to-b from-slate-100 via-slate-50 to-slate-200 border border-slate-200 shadow-sm flex flex-col"
     >
       {/* ── Top Bar ── */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        <div className="pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">
-          <span className="text-xs font-bold text-red-600 font-mono">#{String(id).padStart(3, '0')}</span>
-          <h2 className="text-base sm:text-lg font-black tracking-wide text-slate-800 capitalize">{name}</h2>
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-20 flex items-center justify-between gap-2 pointer-events-none flex-nowrap">
+        <div className="pointer-events-auto flex items-center bg-white/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm min-w-0 max-w-[45%] sm:max-w-none">
+          <h2 className="text-xs sm:text-base font-black tracking-wide text-slate-800 capitalize truncate">{name}</h2>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-2">
+        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 flex-row flex-nowrap flex-shrink-0">
           {cryUrl && (
             <button
               type="button"
               onClick={handlePlayCry}
               disabled={isPlayingCry}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-200 border shadow-sm ${isPlayingCry ? 'bg-amber-100 text-amber-800 border-amber-400 scale-105' : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'}`}
+              className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-all duration-200 border shadow-sm flex-shrink-0 select-none active:scale-95 ${
+                isPlayingCry
+                  ? 'bg-amber-100 text-amber-800 border-amber-400 scale-105'
+                  : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
+              }`}
               title="Play Pokemon Cry"
+              aria-label="Play Pokemon Cry"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                className={`w-4 h-4 ${isPlayingCry ? 'animate-bounce text-amber-600' : 'text-slate-600'}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className={`w-3.5 h-3.5 flex-shrink-0 ${isPlayingCry ? 'animate-bounce text-amber-600' : 'text-slate-600'}`}
+              >
                 <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.5A2.25 2.25 0 002.25 9.75v4.5a2.25 2.25 0 002.25 2.25h1.94l4.5 4.5c.944.945 2.56.276 2.56-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
                 <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
               </svg>
-              <span>{isPlayingCry ? 'Playing...' : 'Play Cry'}</span>
+              <span className="truncate hidden sm:inline">{isPlayingCry ? 'Playing...' : 'Play Cry'}</span>
             </button>
           )}
 
@@ -189,23 +208,23 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
           <button
             type="button"
             onClick={() => { setHasModelError(false); setIsShiny(!isShiny) }}
-            className={`flex items-center justify-center gap-1.5 w-[92px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
+            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
               isShiny
                 ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-900 font-bold border-yellow-400 ring-2 ring-yellow-400/40 shadow-yellow-500/20'
                 : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
             }`}
-            title="Toggle Normal/Shiny Form"
-            aria-label={isShiny ? 'Switch to Normal form' : 'Switch to Shiny form'}
+            title="Toggle Standard/Shiny Form"
+            aria-label={isShiny ? 'Switch to Standard form' : 'Switch to Shiny form'}
           >
-            {isShiny && <span className="text-sm leading-none">✨</span>}
-            <span className="truncate">{isShiny ? 'Shiny' : 'Normal'}</span>
+            <span className={`text-xs leading-none flex-shrink-0 ${isShiny ? '' : 'grayscale opacity-60'}`}>✨</span>
+            <span className="truncate hidden sm:inline">{isShiny ? 'Shiny' : 'Standard'}</span>
           </button>
 
           {/* Auto-Rotate Toggle */}
           <button
             type="button"
             onClick={() => setIsAutoRotating(!isAutoRotating)}
-            className={`flex items-center justify-center gap-1.5 w-[116px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
+            className={`flex items-center justify-center gap-1.5 w-[34px] sm:w-[108px] h-[34px] rounded-full text-xs font-semibold backdrop-blur-md transition-colors duration-200 border shadow-sm select-none active:scale-95 flex-shrink-0 ${
               isAutoRotating
                 ? 'bg-blue-50/95 text-blue-700 border-blue-200 ring-1 ring-blue-300/40 hover:bg-blue-100 hover:border-blue-300'
                 : 'bg-white/90 text-slate-700 hover:text-slate-900 hover:bg-white border-slate-200'
@@ -224,7 +243,7 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
                   <rect x="5" y="4" width="4.5" height="16" rx="1.5" />
                   <rect x="14.5" y="4" width="4.5" height="16" rx="1.5" />
                 </svg>
-                <span className="truncate">Auto-rotating</span>
+                <span className="truncate hidden sm:inline">Auto-rotating</span>
               </>
             ) : (
               <>
@@ -240,30 +259,48 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="truncate">Auto-rotate</span>
+                <span className="truncate hidden sm:inline">Auto-rotate</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* ── 3D Canvas or Fallback ── */}
+      {/* ── 3D Canvas or Sprite Fallback ── */}
       <div className="relative w-full h-full flex items-center justify-center">
         {hasModelError ? (
           <div className="flex flex-col items-center justify-center p-6 text-center z-10">
-            <img src={fallbackImage} alt={name} className="w-48 h-48 sm:w-64 sm:h-64 object-contain filter drop-shadow-lg animate-pulse" />
+            <img
+              src={spriteUrl}
+              alt={name}
+              className="w-48 h-48 sm:w-64 sm:h-64 object-contain filter drop-shadow-lg"
+              onError={(e) => {
+                if (fallbackImage && e.currentTarget.src !== fallbackImage) {
+                  e.currentTarget.src = fallbackImage
+                }
+              }}
+            />
             <p className="mt-4 text-xs font-medium text-slate-600 bg-white/90 px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-              3D model unavailable for this form • Showing official artwork
+              3D model unavailable • Displaying sprite fallback
             </p>
           </div>
-        ) : isInView ? (
+        ) : isCanvasVisible ? (
           <ModelErrorBoundary
             resetKey={`${id}-${category}`}
             onCatch={() => setHasModelError(true)}
             fallback={
-              <div className="flex flex-col items-center justify-center p-6 text-center">
-                <img src={fallbackImage} alt={name} className="w-48 h-48 sm:w-64 sm:h-64 object-contain filter drop-shadow-lg" />
-                <p className="mt-3 text-xs text-slate-500">3D model loading failed • Displaying static image</p>
+              <div className="flex flex-col items-center justify-center p-6 text-center z-10">
+                <img
+                  src={spriteUrl}
+                  alt={name}
+                  className="w-48 h-48 sm:w-64 sm:h-64 object-contain filter drop-shadow-lg"
+                  onError={(e) => {
+                    if (fallbackImage && e.currentTarget.src !== fallbackImage) {
+                      e.currentTarget.src = fallbackImage
+                    }
+                  }}
+                />
+                <p className="mt-3 text-xs text-slate-500">3D model loading failed • Displaying sprite fallback</p>
               </div>
             }
           >
@@ -281,16 +318,7 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
               <directionalLight position={[-5, 4, -4]} intensity={0.5} color="#90cdf4" />
               <pointLight position={[0, -1, 2]} intensity={0.4} color="#fbd38d" />
 
-              <Suspense
-                fallback={
-                  <Html center>
-                    <div className="flex flex-col items-center justify-center gap-2 p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 shadow-md">
-                      <div className="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs font-semibold text-slate-700">Loading 3D Model...</span>
-                    </div>
-                  </Html>
-                }
-              >
+              <Suspense fallback={null}>
                 <PokemonGLTFModel key={modelUrl} url={modelUrl} autoRotate={isAutoRotating} />
               </Suspense>
 
@@ -305,8 +333,17 @@ export default function PokemonViewer({ id, name, fallbackImage, cryUrl }: Pokem
             </Canvas>
           </ModelErrorBoundary>
         ) : (
-          <div className="flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-2 border-slate-300 border-t-red-500 rounded-full animate-spin" />
+          <div className="flex flex-col items-center justify-center p-6 text-center">
+            <img
+              src={spriteUrl}
+              alt={name}
+              className="w-48 h-48 sm:w-64 sm:h-64 object-contain filter drop-shadow-lg"
+              onError={(e) => {
+                if (fallbackImage && e.currentTarget.src !== fallbackImage) {
+                  e.currentTarget.src = fallbackImage
+                }
+              }}
+            />
           </div>
         )}
       </div>

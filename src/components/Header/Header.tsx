@@ -1,6 +1,7 @@
 import React from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { NavLink } from 'react-router-dom'
+import { Home, LayoutGrid, Star, Search } from 'lucide-react'
+import SettingsMenu from '../SettingsMenu/SettingsMenu'
 import './Header.css'
 
 interface HeaderProps {
@@ -10,10 +11,16 @@ interface HeaderProps {
   onHomeClick?: () => void
 }
 
-function Header({ query = '', setQuery, onSearch, onHomeClick }: HeaderProps) {
-  const navigate = useNavigate()
-  const { user, logout } = useAuth()
+const PokeballIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+    <path d="M3 12H21" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="currentColor" strokeWidth="1" />
+    <circle cx="12" cy="12" r="1.5" fill="white" />
+  </svg>
+)
 
+function Header({ query = '', setQuery, onSearch, onHomeClick }: HeaderProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (onSearch) {
@@ -21,61 +28,94 @@ function Header({ query = '', setQuery, onSearch, onHomeClick }: HeaderProps) {
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-      navigate('/')
-    } catch (err) {
-      console.error('Logout failed:', err)
-    }
-  }
-
   return (
-    <header className="header">
-      <nav className="header__nav" aria-label="Main navigation">
-        <NavLink to="/" className="header__link" end onClick={onHomeClick}>
-          Home
-        </NavLink>
-        <NavLink to="/categories" className="header__link">
-          Categories
-        </NavLink>
-        <NavLink to="/my-pokedex" className="header__link">
-          My Pokedex
-        </NavLink>
-        <NavLink to="/favourites" className="header__link">
-          <span className="header__star" aria-hidden="true">
-            ★
-          </span>
-          Favourites
-        </NavLink>
-        {user ? (
-          <button type="button" className="header__link" onClick={handleLogout}>
-            Logout
-          </button>
-        ) : (
-          <NavLink to="/auth" className="header__link">
-            Login
+    <>
+      <header className="header">
+        {/* Desktop Navigation Links */}
+        <nav className="header__nav header__nav--desktop" aria-label="Desktop navigation">
+          <NavLink to="/" className="header__link" end onClick={onHomeClick}>
+            <Home className="w-4 h-4" />
+            <span>Home</span>
           </NavLink>
-        )}
-      </nav>
+          <NavLink to="/categories" className="header__link">
+            <LayoutGrid className="w-4 h-4" />
+            <span>Categories</span>
+          </NavLink>
+          <NavLink to="/my-pokedex" className="header__link">
+            <PokeballIcon className="w-4 h-4" />
+            <span>My Pokedex</span>
+          </NavLink>
+          <NavLink to="/favourites" className="header__link">
+            <Star className="w-4 h-4 text-[#ffd700] fill-[#ffd700]" />
+            <span>Favourites</span>
+          </NavLink>
+        </nav>
 
-      <form className="header__search" onSubmit={handleSubmit}>
-        <input
-          type="search"
-          className="header__search-input"
-          placeholder="Pokemon name"
-          aria-label="Pokemon name"
-          value={query}
-          onChange={(e) => setQuery && setQuery(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="header__search-button"
+        {/* Top Right Controls (Search & Settings) */}
+        <div className="header__right">
+          <form className="header__search" onSubmit={handleSubmit}>
+            <input
+              type="search"
+              className="header__search-input"
+              placeholder="Pokemon name"
+              aria-label="Pokemon name"
+              value={query}
+              onChange={(e) => setQuery && setQuery(e.target.value)}
+            />
+            <button type="submit" className="header__search-button" aria-label="Search">
+              <Search className="w-4 h-4 header__search-icon" />
+              <span className="header__search-text">Search</span>
+            </button>
+          </form>
+          <SettingsMenu />
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        <NavLink
+          to="/"
+          end
+          onClick={onHomeClick}
+          className={({ isActive }) =>
+            `mobile-bottom-nav__item ${isActive ? 'mobile-bottom-nav__item--active' : ''}`
+          }
         >
-          Search
-        </button>
-      </form>
-    </header>
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className="mobile-bottom-nav__label">Home</span>
+        </NavLink>
+
+        <NavLink
+          to="/categories"
+          className={({ isActive }) =>
+            `mobile-bottom-nav__item ${isActive ? 'mobile-bottom-nav__item--active' : ''}`
+          }
+        >
+          <LayoutGrid className="w-5 h-5 mb-0.5" />
+          <span className="mobile-bottom-nav__label">Categories</span>
+        </NavLink>
+
+        <NavLink
+          to="/my-pokedex"
+          className={({ isActive }) =>
+            `mobile-bottom-nav__item ${isActive ? 'mobile-bottom-nav__item--active' : ''}`
+          }
+        >
+          <PokeballIcon className="w-5 h-5 mb-0.5" />
+          <span className="mobile-bottom-nav__label">My Pokédex</span>
+        </NavLink>
+
+        <NavLink
+          to="/favourites"
+          className={({ isActive }) =>
+            `mobile-bottom-nav__item ${isActive ? 'mobile-bottom-nav__item--active' : ''}`
+          }
+        >
+          <Star className="w-5 h-5 mb-0.5" />
+          <span className="mobile-bottom-nav__label">Favourites</span>
+        </NavLink>
+      </nav>
+    </>
   )
 }
 
